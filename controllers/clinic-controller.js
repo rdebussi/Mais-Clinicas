@@ -9,9 +9,15 @@ export const createClinic = async (req, res) => {
   }
 };
 
-export const getAllClinics = async (_req, res) => {
-  const clinics = await ClinicService.getAllClinics();
-  res.json(clinics);
+export const getAllClinics = async (req, res) => {
+  const { page = 1, limit = 10, orderBy = 'name', sortOrder = 'ASC', name } = req.query;
+
+  try {
+    const clinicsData = await ClinicService.getAllClinics({ page, limit, orderBy, sortOrder, name });
+    res.status(200).json(clinicsData);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };
 
 export const getClinicById = async (req, res) => {
@@ -38,3 +44,15 @@ export const deleteClinic = async (req, res) => {
     res.status(400).json({error: e.message})
   }
 }
+
+export const findDoctors = async (req, res) => {
+  const { id } = req.params;
+  const { specialty, page = 1, limit = 10, orderBy = 'name', sortOrder = 'ASC' } = req.query;
+  
+  try {
+    const doctors = await ClinicService.findDoctors(id, specialty, page, limit, orderBy, sortOrder);
+    res.status(200).json(doctors);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+};

@@ -1,5 +1,5 @@
 // models/clinic.js
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcrypt';
 
 export default (sequelize, DataTypes) => {
   const Clinic = sequelize.define('Clinic', {
@@ -7,15 +7,46 @@ export default (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
+    cnpj: {
+      type: DataTypes.STRING(18), // Formato '00.000.000/0000-00'
+      allowNull: false,
+      unique: true,
+      validate: {
+        len: [14, 18] // Aceita só o formato correto (com ou sem máscara)
+      }
+    },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true
+      unique: true,
+      validate: {
+        isEmail: true // Garante que é email válido
+      }
     },
     password: {
       type: DataTypes.STRING,
       allowNull: false
     },
+    description: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    address: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    city: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    state: {
+      type: DataTypes.STRING(2), // Ex: 'SP', 'RJ'
+      allowNull: false
+    },
+    zipCode: {
+      type: DataTypes.STRING(9), // Ex: '12345-678'
+      allowNull: false
+    }
   },
   {
     hooks: {
@@ -32,17 +63,16 @@ export default (sequelize, DataTypes) => {
         }
       }
     }
-  },
-  {});
+  });
 
   Clinic.associate = function(models) {
     Clinic.hasMany(models.Phone, {
       foreignKey: 'clinicId',
-      as: 'phones' // Alias para referenciar os telefones da clínica
+      as: 'phones'
     });
     Clinic.hasMany(models.Doctor, {
       foreignKey: 'clinicId',
-      as: 'doctors' // Alias para referenciar os médicos de uma clínica
+      as: 'doctors'
     });
   };
 

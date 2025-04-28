@@ -17,4 +17,8 @@ router.get('/:id',  ClinicController.getClinicById);
 router.patch('/:id', authMiddleware, authorizeRoles('clinic'), ClinicController.updateClinic);
 router.delete('/:id', authMiddleware, authorizeRoles('clinic'), ClinicController.deleteClinic);
 //----------------------------
+
+//ambos vão usar
+router.get('/:id/doctors', ClinicController.findDoctors);
+
 export default router;
