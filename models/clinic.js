@@ -31,6 +31,14 @@ export default (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true
     },
+    logoUrl: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    pics: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     address: {
       type: DataTypes.STRING,
       allowNull: false
@@ -61,7 +69,7 @@ export default (sequelize, DataTypes) => {
           const salt = await bcrypt.genSalt(10);
           clinic.password = await bcrypt.hash(clinic.password, salt);
         }
-      }
+      }      
     }
   });
 

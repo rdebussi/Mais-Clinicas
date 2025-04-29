@@ -1,6 +1,7 @@
 // src/services/clinicService.js
 import db from '../models/index.js';
 import { Op } from 'sequelize';
+import bcrypt from 'bcrypt';
 
 
 export const createClinic = async (data) => {
@@ -70,20 +71,42 @@ export const getClinicById = async (id) => {
 };
 
 export const updateClinic = async (id, data) => {
-    try {
-      const existingClinic = await db.Clinic.findByPk(id)
-      if(!existingClinic){
-        throw new Error('clinic not found')
-      }
-      if(data.password != existingClinic.password){
-        throw new Error('incorrect password')
-      }
-      const clinic = await db.Clinic.update(data, {where: {id}})
-      return clinic
-    } catch(e) {
-      throw e;
+  try {
+    const existingClinic = await db.Clinic.findByPk(id);
+    if (!existingClinic) {
+      throw new Error('clinic not found');
     }
-}
+
+    const isPasswordCorrect = await bcrypt.compare(
+      data.password,
+      existingClinic.password
+    );
+    if (!isPasswordCorrect) {
+      throw new Error('incorrect password');
+    }
+
+    // Cria um novo objeto apenas com os campos que serão atualizados
+    const updateData = { ...data };
+
+    // Se o usuário quer mudar a senha
+    if (data.newPassword) {
+      updateData.password = data.newPassword;
+    }
+
+    // Sempre remover esses campos antes do update
+    delete updateData.password;     // só serviu para validação
+    delete updateData.newPassword; // já foi tratado
+
+    const [affected] = await db.Clinic.update(updateData, { where: { id } });
+
+    return affected;
+
+  } catch (e) {
+    throw e;
+  }
+  
+};
+
 
 export const deleteClinic = async (id) => {
   try {
