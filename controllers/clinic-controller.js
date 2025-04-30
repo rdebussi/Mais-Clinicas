@@ -56,3 +56,14 @@ export const findDoctors = async (req, res) => {
     res.status(400).json({ error: e.message });
   }
 };
+
+export const changeClinicPassword = async (req, res) => {
+  const { id } = req.params
+  const { password, newPassword} = req.body
+  try {
+    await ClinicService.changeClinicPassword(id, password, newPassword)
+    res.status(200).json({message: 'Senha atualizada com sucesso.'})
+  } catch (e) {
+    res.status(400).json({error: e.message})
+  }
+}

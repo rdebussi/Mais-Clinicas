@@ -35,3 +35,14 @@ export const deleteAppointment = async (req, res) => {
     res.status(400).json({ error: e.message });
   }
 };
+
+export const getAppointments = async (req, res) => {
+  try {
+    const { doctorId, clinicId, clientId } = req.query;
+    const appointments = await AppointmentService.getAppointments({ doctorId, clinicId, clientId });
+    res.json(appointments);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+

@@ -23,7 +23,7 @@ app.use(routes);
 
 
 // Sincronizando e ajustando o banco de dados
-db.sequelize.sync({ alter: true }).then(async () => {
+db.sequelize.sync().then(async () => {
   console.log('Banco de dados sincronizado com sucesso!');
   
   // // Garantir que a coluna doctorId permita NULL

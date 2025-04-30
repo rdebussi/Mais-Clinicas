@@ -9,5 +9,7 @@ router.post('/', ClientController.createClient);
 router.get('/:id',  ClientController.getClientById);
 router.patch('/:id', ClientController.updateClient);
 router.delete('/:id',  ClientController.deleteClient);
+router.patch('/:id/password',  ClientController.changeClientPassword);
+
 
 export default router;

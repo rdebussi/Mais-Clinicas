@@ -36,3 +36,15 @@ export const deleteClient = async (req, res) => {
     res.status(400).json({ error: e.message });
   }
 };
+
+export const changeClientPassword = async (req, res) => {
+  const { id } = req.params;
+  const { password, newPassword } = req.body;
+
+  try {
+    await ClientService.changeClientPassword(id, password, newPassword);
+    res.status(200).json({ message: 'Senha atualizada com sucesso.' });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+};

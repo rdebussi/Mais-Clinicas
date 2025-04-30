@@ -32,8 +32,10 @@ export const getClientById = async (id) => {
 };
 
 export const updateClient = async (id, data) => {
+  try {
     const existingClient = await db.Client.findByPk(id);
     if (!existingClient) throw new Error('Cliente não encontrado');
+
     const isPasswordCorrect = await bcrypt.compare(
       data.password,
       existingClient.password
@@ -42,17 +44,39 @@ export const updateClient = async (id, data) => {
       throw new Error('Senha incorreta');
     }
     const updateData = { ...data };
-    // Se o cliente quer mudar a senha
-    delete updateData.password
+    delete updateData.password;
     const [affected] = await db.Client.update(updateData, { where: { id } });
     if (affected === 0) throw new Error('Nada foi atualizado');
-  
     return await getClientById(id);
-  };
+  } catch (e) {
+    throw e;
+  }
+};
+
 
 export const deleteClient = async (id) => {
   const client = await db.Client.findByPk(id);
   if (!client) throw new Error('Cliente não encontrado');
   await db.Client.destroy({ where: { id } });
   return true;
+};
+
+export const changeClientPassword = async (id, oldPassword, newPassword) => {
+  try {
+    const client = await db.Client.findByPk(id);
+    if (!client) {
+      throw new Error('Cliente não encontrado');
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(oldPassword, client.password);
+    if (!isPasswordCorrect) {
+      throw new Error('Senha atual incorreta');
+    }
+
+    client.password = newPassword; // Será hasheada pelo hook beforeUpdate
+    await client.save();
+    return true;
+  } catch(e) {
+    throw e;
+  }
 };

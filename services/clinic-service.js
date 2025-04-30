@@ -137,3 +137,13 @@ export const findDoctors = async (id, specialty, page = 1, limit = 10, orderBy =
     throw e;
   }
 };
+
+export const changeClinicPassword = async (id, oldPassword, newPassword) => {
+  const clinic = await db.Clinic.findByPk(id);
+  if(!clinic) throw new Error('Clinica nao encontrada');
+  const isPasswordCorrect = await bcrypt.compare(oldPassword, clinic.password);
+  if(!isPasswordCorrect) throw new Error('Senha atual incorreta!');
+  clinic.password = newPassword;
+  await clinic.save();
+  return true;
+}

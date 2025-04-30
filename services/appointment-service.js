@@ -27,6 +27,10 @@ export const getAppointmentById = async (id) => {
   const appointment = await db.Appointment.findByPk(id, {
     include: [
       {
+        model: db.Clinic,
+        as: 'clinic'
+      },
+      {
         model: db.Doctor,
         as: 'doctor'
       },
@@ -64,4 +68,24 @@ export const deleteAppointment = async (id) => {
   if (!appointment) throw new Error('Consulta não encontrada');
   await db.Appointment.destroy({ where: { id } });
   return true;
+};
+
+
+export const getAppointments = async ({ doctorId, clinicId, clientId }) => {
+  const where = {};
+  if (doctorId) where.doctorId = doctorId;
+  if (clinicId) where.clinicId = clinicId;
+  if (clientId) where.clientId = clientId;
+
+  const appointments = await db.Appointment.findAll({
+    where,
+    include: [
+      { model: db.Doctor, as: 'doctor' },
+      { model: db.Client, as: 'client' },
+      { model: db.Clinic, as: 'clinic' }
+    ],
+    order: [['schedule', 'ASC']]
+  });
+
+  return appointments;
 };

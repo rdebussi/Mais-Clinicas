@@ -16,6 +16,7 @@ router.get('/:id',  ClinicController.getClinicById);
 //clinic vai usar --------------
 router.patch('/:id', authMiddleware, authorizeRoles('clinic'), ClinicController.updateClinic);
 router.delete('/:id', authMiddleware, authorizeRoles('clinic'), ClinicController.deleteClinic);
+router.patch('/:id/password', ClinicController.changeClinicPassword)
 //----------------------------
 
 //ambos vão usar

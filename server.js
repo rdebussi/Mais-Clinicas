@@ -15,4 +15,4 @@ app.use('/clinics', clinicRoutes);
 app.use('/login', loginRoutes);
 app.use('/doctor', doctorRoutes);
 app.use('/appointment', appointmentRoutes);
-app.use('/client', clientRoutes)
+app.use('/client', clientRoutes);
