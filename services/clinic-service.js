@@ -84,21 +84,10 @@ export const updateClinic = async (id, data) => {
     if (!isPasswordCorrect) {
       throw new Error('incorrect password');
     }
-
     // Cria um novo objeto apenas com os campos que serão atualizados
     const updateData = { ...data };
-
-    // Se o usuário quer mudar a senha
-    if (data.newPassword) {
-      updateData.password = data.newPassword;
-    }
-
-    // Sempre remover esses campos antes do update
     delete updateData.password;     // só serviu para validação
-    delete updateData.newPassword; // já foi tratado
-
     const [affected] = await db.Clinic.update(updateData, { where: { id } });
-
     return affected;
 
   } catch (e) {

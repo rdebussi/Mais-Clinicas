@@ -4,9 +4,9 @@ import { authMiddleware, authorizeRoles } from '../middleware/auth.js';
 
 const router = express.Router()
 
-router.post('/', DoctorController.createDoctor);
+router.post('/',  DoctorController.createDoctor);
 router.get('/:id', DoctorController.getDoctorById);
-router.patch('/:id', DoctorController.updateDoctor);
-router.delete('/:id', DoctorController.deleteDoctor)
+router.patch('/:id', authMiddleware, authorizeRoles('clinic'), DoctorController.updateDoctor);
+router.delete('/:id', authMiddleware, authorizeRoles('clinic'), DoctorController.deleteDoctor)
 
 export default router;
