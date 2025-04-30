@@ -4,13 +4,21 @@ import { Op } from 'sequelize';
 
 export const createAppointment = async (data) => {
   const { clientId, doctorId, schedule } = data;
-
   const doctor = await db.Doctor.findByPk(doctorId);
   if (!doctor) throw new Error('Médico não encontrado');
-
   const client = await db.Client.findByPk(clientId);
   if (!client) throw new Error('Cliente não encontrado');
-
+  // Verifica indisponibilidade do médico
+  const isUnavailable = await db.UnavailableDate.findOne({
+    where: {
+      doctorId,
+      startDate: { [Op.lte]: schedule },
+      endDate: { [Op.gte]: schedule }
+    }
+  });
+  if (isUnavailable) {
+    throw new Error(`O médico está indisponível neste horário (${isUnavailable.type})`);
+  }
   const existingAppointment = await db.Appointment.findOne({
     where: {
       clientId,
@@ -18,10 +26,10 @@ export const createAppointment = async (data) => {
     }
   });
   if (existingAppointment) throw new Error('O cliente já possui uma consulta marcada neste horário');
-
   const appointment = await db.Appointment.create(data);
   return appointment;
 };
+
 
 export const getAppointmentById = async (id) => {
   const appointment = await db.Appointment.findByPk(id, {
@@ -47,28 +55,35 @@ export const getAppointmentById = async (id) => {
 export const updateAppointment = async (id, data) => {
   const appointment = await db.Appointment.findByPk(id);
   if (!appointment) throw new Error('Consulta não encontrada');
-
+  const newSchedule = data.schedule || appointment.schedule;
+  const newDoctorId = data.doctorId || appointment.doctorId;
+  const newClientId = data.clientId || appointment.clientId;
+  // Verifica indisponibilidade do médico
+  const isUnavailable = await db.UnavailableDate.findOne({
+    where: {
+      doctorId: newDoctorId,
+      startDate: { [Op.lte]: newSchedule },
+      endDate: { [Op.gte]: newSchedule }
+    }
+  });
+  if (isUnavailable) {
+    throw new Error(`O médico está indisponível neste horário (${isUnavailable.type})`);
+  }
+  // Verifica conflito de cliente no novo horário
   if (data.schedule || data.clientId) {
     const conflict = await db.Appointment.findOne({
       where: {
-        clientId: data.clientId || appointment.clientId,
-        schedule: data.schedule || appointment.schedule,
+        clientId: newClientId,
+        schedule: newSchedule,
         id: { [Op.ne]: id }
       }
     });
     if (conflict) throw new Error('O cliente já possui uma consulta nesse horário');
   }
-
   await db.Appointment.update(data, { where: { id } });
   return await getAppointmentById(id);
 };
 
-export const deleteAppointment = async (id) => {
-  const appointment = await db.Appointment.findByPk(id);
-  if (!appointment) throw new Error('Consulta não encontrada');
-  await db.Appointment.destroy({ where: { id } });
-  return true;
-};
 
 
 export const getAppointments = async ({ doctorId, clinicId, clientId }) => {
