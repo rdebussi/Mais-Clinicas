@@ -110,34 +110,6 @@ export const deleteClinic = async (id) => {
   }
 }
 
-export const findDoctors = async (id, specialty, page = 1, limit = 10, orderBy = 'name', sortOrder = 'ASC') => {
-  const where = { clinicId: id };
-  
-  if (specialty) {
-    const specialtyList = specialty.split(',').map(item => item.trim());
-    where.specialty = specialtyList.length > 1 ? { [Op.in]: specialtyList } : specialtyList[0];
-  }
-
-  try {
-    const doctors = await db.Doctor.findAll({
-      where,
-      limit: parseInt(limit, 10),         // Limita a quantidade de registros por página
-      offset: (parseInt(page, 10) - 1) * parseInt(limit, 10),  // Desloca os resultados
-      order: [[orderBy, sortOrder]],       // Ordena os resultados
-      include: [
-        {
-          model: db.Clinic,
-          as: 'clinic',
-          attributes: ['name']
-        }
-      ]
-    });
-    return doctors;
-  } catch (e) {
-    throw e;
-  }
-};
-
 export const changeClinicPassword = async (id, oldPassword, newPassword) => {
   const clinic = await db.Clinic.findByPk(id);
   if(!clinic) throw new Error('Clinica nao encontrada');

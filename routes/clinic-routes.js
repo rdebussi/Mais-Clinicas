@@ -5,6 +5,7 @@ import { authMiddleware, authorizeRoles } from '../middleware/auth.js';
 
 const router = express.Router();
 
+
 //criação da clínica
 router.post('/', ClinicController.createClinic);
 
@@ -20,6 +21,6 @@ router.patch('/:id/password', ClinicController.changeClinicPassword)
 //----------------------------
 
 //ambos vão usar
-router.get('/:id/doctors', ClinicController.findDoctors);
+
 
 export default router;

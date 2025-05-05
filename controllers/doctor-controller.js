@@ -10,6 +10,17 @@ export const createDoctor = async (req, res) => {
     }
 }
 
+export const findDoctors = async (req, res) => {
+  const { clinicId, specialty, page = 1, limit = 10, orderBy = 'name', sortOrder = 'ASC' } = req.query;
+  
+  try {
+    const doctors = await DoctorService.findDoctors(clinicId, specialty, page, limit, orderBy, sortOrder);
+    res.status(200).json(doctors);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+};
+
 export const getDoctorById = async (req, res) => {
     const { id } = req.params
     try {

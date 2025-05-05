@@ -66,3 +66,36 @@ export const deleteDoctor = async (id) => {
     }
 }
 
+export const findDoctors = async (clinicId, specialty, page = 1, limit = 10, orderBy = 'name', sortOrder = 'ASC') => {
+  const where = {};
+
+  // Só filtra por clínica se o clinicId for passado
+  if (clinicId) {
+    where.clinicId = clinicId;
+  }
+
+  if (specialty) {
+    const specialtyList = specialty.split(',').map(item => item.trim());
+    where.specialty = specialtyList.length > 1 ? { [Op.in]: specialtyList } : specialtyList[0];
+  }
+
+  try {
+    const doctors = await db.Doctor.findAll({
+      where,
+      limit: parseInt(limit, 10),
+      offset: (parseInt(page, 10) - 1) * parseInt(limit, 10),
+      order: [[orderBy, sortOrder]],
+      include: [
+        {
+          model: db.Clinic,
+          as: 'clinic',
+          attributes: ['name']
+        }
+      ]
+    });
+    return doctors;
+  } catch (e) {
+    throw e;
+  }
+};
+
