@@ -1,8 +1,8 @@
-# 🏥 API para Gestão de Clínicas Médicas
+#  API para Gestão de Clínicas Médicas
 
 Esta é uma API RESTful criada com foco em sistemas de agendamento e gerenciamento de clínicas médicas. Com ela, é possível cadastrar clínicas, médicos, clientes, agendar consultas e definir períodos de indisponibilidade como férias e folgas.
 
-## 🚀 Funcionalidades
+##  Funcionalidades
 
 - CRUD de Clínicas, Médicos, Clientes e Telefones
 - Agendamento de Consultas com as seguintes validações:
@@ -15,16 +15,18 @@ Esta é uma API RESTful criada com foco em sistemas de agendamento e gerenciamen
 - Autenticação com JWT
 - Paginação e ordenação nas listagens
 
-## 🧰 Tecnologias Utilizadas
+##  Tecnologias Utilizadas
 
-- [Node.js](https://nodejs.org/)
-- [Express.js](https://expressjs.com/)
-- [Sequelize](https://sequelize.org/)
-- [MySQL](https://www.mysql.com/)
-- [JWT (JSON Web Tokens)](https://jwt.io/)
-- [Postman](https://www.postman.com/) para testes
+- Node.js
+- Express.js
+- Sequelize
+- MySQL
+- JWT (JSON Web Tokens)
+- Postman
+- MySQL Workbench
 
-## 🧪 Testando a API
+ 
+##  Testando a API
 Use o Postman ou outro cliente HTTP para testar os endpoints da API.
 
 Alguns exemplos de rotas:
