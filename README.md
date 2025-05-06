@@ -24,4 +24,31 @@ Esta é uma API RESTful criada com foco em sistemas de agendamento e gerenciamen
 - [JWT (JSON Web Tokens)](https://jwt.io/)
 - [Postman](https://www.postman.com/) para testes
 
+##🧪 Testando a API
+Use o Postman ou outro cliente HTTP para testar os endpoints da API.
+
+Alguns exemplos de rotas:
+
+- POST /clinics
+- POST /login
+- POST /doctors
+- POST /appointments
+- GET /appointments?doctorId=1
+- POST /unavailable-dates
+
+  ##Sobre o Desenvolvedor
+Sou estudante de Ciência da Computação na UFJF (2021–2025), com formação técnica em Informática (IFSEMG - 2018/2020) e curso de Desenvolvedor Web Front-End pela Codi Academy (2022/2023).
+
+Tenho conhecimento em:
+
+- Node.js
+- JavaScript
+- C#
+- C++
+- SQL
+
+Atualmente estou em busca da minha primeira oportunidade como desenvolvedor, com foco em back-end.
+
+##📫 Contato: [Linkedin](www.linkedin.com/in/rafael-debussi)
+
 
