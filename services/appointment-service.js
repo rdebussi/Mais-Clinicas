@@ -4,6 +4,11 @@ import { Op } from 'sequelize';
 
 export const createAppointment = async (data) => {
   const { clientId, doctorId, schedule } = data;
+  // Verifica se a data é um domingo
+  const dayOfWeek = new Date(schedule).getDay(); // 0 = domingo, 6 = sábado
+  if (dayOfWeek === 0) {
+    throw new Error('Não é possível agendar consultas aos domingos.');
+  }
   const doctor = await db.Doctor.findByPk(doctorId);
   if (!doctor) throw new Error('Médico não encontrado');
   const client = await db.Client.findByPk(clientId);
@@ -58,6 +63,12 @@ export const updateAppointment = async (id, data) => {
   const newSchedule = data.schedule || appointment.schedule;
   const newDoctorId = data.doctorId || appointment.doctorId;
   const newClientId = data.clientId || appointment.clientId;
+  // Verifica se a data é um domingo
+  const dayOfWeek = new Date(newSchedule).getDay(); // 0 = domingo, 6 = sábado
+  if (dayOfWeek === 0) {
+    throw new Error('Não é possível agendar consultas aos domingos.');
+  }
+
   // Verifica indisponibilidade do médico
   const isUnavailable = await db.UnavailableDate.findOne({
     where: {

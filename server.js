@@ -4,6 +4,9 @@ import loginRoutes from './routes/auth-routes.js';
 import doctorRoutes from './routes/doctor-routes.js';
 import appointmentRoutes from './routes/appointment-routes.js';
 import clientRoutes from './routes/client-routes.js'
+import phoneRoutes from './routes/phone-routes.js'
+import unavailableDateRoutes from './routes/unavailabledate-routes.js';
+
 
 const PORT = process.env.PORT || 3001;
 
@@ -16,3 +19,5 @@ app.use('/login', loginRoutes);
 app.use('/doctor', doctorRoutes);
 app.use('/appointment', appointmentRoutes);
 app.use('/client', clientRoutes);
+app.use('/phone', phoneRoutes);
+app.use('/unavailable', unavailableDateRoutes);
