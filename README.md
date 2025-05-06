@@ -51,6 +51,6 @@ Tenho conhecimento em:
 
 Atualmente estou em busca da minha primeira oportunidade como desenvolvedor, com foco em back-end.
 
-##📫 Contato: [Linkedin](www.linkedin.com/in/rafael-debussi)
+## 📫 Contato: [Linkedin](www.linkedin.com/in/rafael-debussi)
 
 
