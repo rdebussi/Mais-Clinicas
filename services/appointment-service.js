@@ -2,10 +2,16 @@
 import db from '../models/index.js';
 import { Op } from 'sequelize';
 
+
+
 export const createAppointment = async (data) => {
   const { clientId, doctorId, schedule } = data;
   // Verifica se a data é um domingo
-  const dayOfWeek = new Date(schedule).getDay(); // 0 = domingo, 6 = sábado
+
+  const scheduleInUTC = new Date(new Date(schedule).getTime() - 3 * 60 * 60 * 1000);
+
+
+  const dayOfWeek = new Date(scheduleInUTC).getDay(); // 0 = domingo, 6 = sábado
   if (dayOfWeek === 0) {
     throw new Error('Não é possível agendar consultas aos domingos.');
   }
@@ -17,21 +23,32 @@ export const createAppointment = async (data) => {
   const isUnavailable = await db.UnavailableDate.findOne({
     where: {
       doctorId,
-      startDate: { [Op.lte]: schedule },
-      endDate: { [Op.gte]: schedule }
+      startDate: { [Op.lte]: scheduleInUTC },
+      endDate: { [Op.gte]: scheduleInUTC }
     }
   });
   if (isUnavailable) {
     throw new Error(`O médico está indisponível neste horário (${isUnavailable.type})`);
   }
-  const existingAppointment = await db.Appointment.findOne({
+  let existingAppointment = await db.Appointment.findOne({
     where: {
       clientId,
-      schedule
+      schedule: scheduleInUTC
     }
   });
   if (existingAppointment) throw new Error('O cliente já possui uma consulta marcada neste horário');
-  const appointment = await db.Appointment.create(data);
+  existingAppointment = await db.Appointment.findOne({
+    where: {
+      doctorId,
+      schedule: scheduleInUTC
+    }
+  })
+  if (existingAppointment) throw new Error('O Médico já possui uma consulta marcada neste horário');
+
+  const appointment = await db.Appointment.create({
+    ...data,
+    schedule: scheduleInUTC
+  }); 
   return appointment;
 };
 
@@ -41,15 +58,17 @@ export const getAppointmentById = async (id) => {
     include: [
       {
         model: db.Clinic,
-        as: 'clinic'
+        as: 'clinic',
+        attributes: { exclude: ['password'] }
       },
       {
         model: db.Doctor,
-        as: 'doctor'
+        as: 'doctor',
       },
       {
         model: db.Client,
-        as: 'client'
+        as: 'client',
+        attributes: { exclude: ['password'] }
       }
     ]
   });
@@ -89,7 +108,7 @@ export const updateAppointment = async (id, data) => {
         id: { [Op.ne]: id }
       }
     });
-    if (conflict) throw new Error('O cliente já possui uma consulta nesse horário');
+    if (conflict) throw new Error('Já existe uma consulta nesse horário');
   }
   await db.Appointment.update(data, { where: { id } });
   return await getAppointmentById(id);
@@ -107,11 +126,25 @@ export const getAppointments = async ({ doctorId, clinicId, clientId }) => {
     where,
     include: [
       { model: db.Doctor, as: 'doctor' },
-      { model: db.Client, as: 'client' },
-      { model: db.Clinic, as: 'clinic' }
+      { model: db.Client, as: 'client',  attributes: { exclude: ['password'] } },
+      { model: db.Clinic, as: 'clinic',  attributes: { exclude: ['password'] } }
     ],
     order: [['schedule', 'ASC']]
   });
 
   return appointments;
 };
+
+
+export const deleteAppointment = async (id) => {
+  try {
+    const Appointment = await db.Appointment.findByPk(id)
+    if(!Appointment) {
+      throw new Error('Consulta não encontrada!')
+    }
+    await db.Appointment.destroy({where:{id}})
+    return true
+  } catch(e) {
+    throw e;
+  }
+}

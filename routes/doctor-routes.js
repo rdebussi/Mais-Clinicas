@@ -8,6 +8,8 @@ router.post('/',  DoctorController.createDoctor);
 router.get('/', DoctorController.findDoctors);
 router.get('/:id', DoctorController.getDoctorById);
 router.patch('/:id', authMiddleware, authorizeRoles('clinic'), DoctorController.updateDoctor);
-router.delete('/:id', authMiddleware, authorizeRoles('clinic'), DoctorController.deleteDoctor)
+router.delete('/:id', authMiddleware, authorizeRoles('clinic'), DoctorController.deleteDoctor);
+router.get('/:doctorId/available', DoctorController.getAvailableSlots);
+
 
 export default router;

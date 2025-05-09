@@ -49,3 +49,17 @@ export const deleteDoctor = async (req, res) => {
         res.status(400).json({error: e.message})
     }
 }
+
+export const getAvailableSlots = async (req, res) => {
+    try {
+      const { doctorId } = req.params;
+      const { date } = req.query;
+      if (!date) return res.status(400).json({ error: 'Data é obrigatória no formato YYYY-MM-DD' });
+  
+      const slots = await DoctorService.getAvailableSlots(doctorId, date);
+      res.json(slots);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  };
+  
