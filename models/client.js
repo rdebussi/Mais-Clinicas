@@ -16,6 +16,11 @@ export default (sequelize) => {
         isEmail: true
       }
     },
+    cpf: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true
+    },
     password: {
       type: DataTypes.STRING,
       allowNull: false
@@ -23,6 +28,11 @@ export default (sequelize) => {
     phone: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    chatId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      unique: true
     }
   }, {
     hooks: {

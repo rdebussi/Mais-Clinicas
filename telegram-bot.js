@@ -9,21 +9,78 @@ const CLIENT_ID = 1; // futuramente você pode fazer o mapeamento chatId -> clie
 const userSession = {}; // Armazena temporariamente as escolhas do usuário
 
 function exibirMenuInicial(chatId, nome) {
-  bot.sendMessage(chatId, `Olá ${nome || ''}, escolha uma opção abaixo:`, {
+  bot.sendMessage(chatId,  `🙋 Olá ${nome || ''}, somos a Clínica Health Care \n\n escolha uma opção abaixo:`, {
     reply_markup: {
       inline_keyboard: [
-        [{ text: '🩺 Ver médicos', callback_data: 'ver_medicos' }],
+        [{ text: '🩺 Agendar consulta', callback_data: 'ver_medicos' }],
         [{ text: '📅 Meus agendamentos', callback_data: 'meus_agendamentos' }]
       ]
     }
   });
 }
 
-bot.onText(/\/start/, (msg) => {
+const pendingCpf = {};
+
+bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id;
   const nome = msg.from.first_name;
-  exibirMenuInicial(chatId, nome);
+
+  try {
+    const response = await fetch(`http://localhost:3001/client?chatId=${chatId}`);
+    const client = await response.json(); // <- aqui estava faltando o await
+    //ERRO AQUI
+    if (client && client.id) {
+      return exibirMenuInicial(chatId, nome); // cliente já vinculado
+    } else {
+      pendingCpf[chatId] = true;
+      return bot.sendMessage(chatId, 'Para continuar, informe seu CPF (apenas números)');
+    }
+  } catch (err) {
+    console.error(err);
+    bot.sendMessage(chatId, 'Erro ao buscar o cliente. Tente novamente.');
+  }
 });
+
+bot.on('message', async (msg) => {
+  const chatId = msg.chat.id;
+  const text = msg.text;
+
+  // Só trata CPF se ele estiver na fase de cadastro
+  if (pendingCpf[chatId]) {
+    console.log(text)
+    const cpf = text.replace(/\D/g, ''); // remove não-numéricos
+    console.log(cpf)
+
+    if (cpf.length !== 12) {
+      return bot.sendMessage(chatId, 'CPF inválido. Envie apenas os 11 números.');
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3001/client?cpf=${cpf}`);
+      const client = await response.json();
+
+      if (!client || !client.id) {
+        return bot.sendMessage(chatId, 'CPF não encontrado no sistema.');
+      }
+
+      // Atualiza o chatId no banco
+      await fetch(`http://localhost:3001/client/${client.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chatId })
+      });
+
+      delete pendingCpf[chatId];
+      bot.sendMessage(chatId, '✅ Cadastro confirmado com sucesso!');
+      exibirMenuInicial(chatId, msg.from.first_name);
+
+    } catch (err) {
+      console.error(err);
+      bot.sendMessage(chatId, 'Erro ao validar o CPF. Tente novamente.');
+    }
+  }
+});
+
 
 bot.on('callback_query', async (callbackQuery) => {
   const msg = callbackQuery.message;
@@ -50,8 +107,14 @@ bot.on('callback_query', async (callbackQuery) => {
       }]);
 
       bot.sendMessage(chatId, 'Escolha um médico:', {
-        reply_markup: { inline_keyboard: keyboard }
-      });
+        reply_markup: {
+          inline_keyboard : [
+              ...keyboard,
+              [ {text: '🔙 Voltar', callback_data: 'menu_inicial'} ]
+          ]
+        }
+      }
+      );
 
     } catch (err) {
       console.error(err);
@@ -62,8 +125,11 @@ bot.on('callback_query', async (callbackQuery) => {
   // ESCOLHEU MÉDICO
   else if (data.startsWith('medico_')) {
     const doctorId = parseInt(data.split('_')[1], 10);
-    userSession[chatId] = { doctorId };
-
+    userSession[chatId] = {
+      ...userSession[chatId],
+      doctorId
+    };
+    
     const date = new Date();
     date.setDate(date.getDate() + 1); // amanhã
     const isoDate = date.toISOString().split('T')[0];
@@ -82,7 +148,12 @@ bot.on('callback_query', async (callbackQuery) => {
       }]);
 
       bot.sendMessage(chatId, `Horários disponíveis para ${isoDate}:`, {
-        reply_markup: { inline_keyboard: slotsKeyboard }
+        reply_markup: {
+          inline_keyboard: [
+            ...slotsKeyboard,
+            [ {text: '🔙 Voltar', callback_data: 'menu_inicial'} ]
+          ]
+        }
       });
 
     } catch (err) {
@@ -138,10 +209,6 @@ bot.on('callback_query', async (callbackQuery) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
-
-      if (!response.ok) {
-        throw new Error('Erro na criação do agendamento');
-      }
 
       bot.sendMessage(chatId, '✅ Consulta marcada com sucesso!');
       delete userSession[chatId];

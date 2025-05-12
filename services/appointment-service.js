@@ -8,7 +8,7 @@ export const createAppointment = async (data) => {
   const { clientId, doctorId, schedule } = data;
   // Verifica se a data é um domingo
 
-  const scheduleInUTC = new Date(new Date(schedule).getTime() - 3 * 60 * 60 * 1000);
+  const scheduleInUTC = new Date(new Date(schedule).getTime());
 
 
   const dayOfWeek = new Date(scheduleInUTC).getDay(); // 0 = domingo, 6 = sábado

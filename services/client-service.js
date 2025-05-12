@@ -10,6 +10,7 @@ export const createClient = async (data) => {
   return client;
 };
 
+
 export const getClientById = async (id) => {
   const client = await db.Client.findByPk(id, {
     attributes: { exclude: ['password'] },

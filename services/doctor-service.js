@@ -156,7 +156,7 @@ export const getAvailableSlots = async (doctorId, date) => {
   }
   
   
-  const ocupados = consultas.map(c => formatHourMin(new Date(c.schedule)));
+  const ocupados = consultas.map(c => formatHourMin(new Date((c.schedule) + 3 * 60 * 60)));
   
   const livres = allSlots.filter(slot => {
     const formatted = formatHourMin(slot);
