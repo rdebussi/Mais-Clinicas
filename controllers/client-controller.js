@@ -10,6 +10,16 @@ export const createClient = async (req, res) => {
   }
 };
 
+export const findClient = async (req, res) => {
+  const { chatId } = req.query;
+  try {
+    const client = await ClientService.findClient(chatId);
+    res.status(200).json(client)
+  } catch(e) {
+    res.status(400).json({ error: e.message})
+  }
+}
+
 export const getClientById = async (req, res) => {
   try {
     const client = await ClientService.getClientById(req.params.id);

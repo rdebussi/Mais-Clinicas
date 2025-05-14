@@ -13,10 +13,12 @@ router.patch('/:id/password',  ClientController.changeClientPassword);
 
 router.get('/', async (req, res) => {
     const { chatId, cpf } = req.query;
+    console.log(chatId)
     let client;
   
     if (chatId) {
       client = await db.Client.findOne({ where: { chatId } });
+      console.log("1 -", client)
     } else if (cpf) {
       client = await db.Client.findOne({ where: { cpf } });
     }
@@ -24,8 +26,9 @@ router.get('/', async (req, res) => {
     if (!client) {
       return res.status(404).json({});
     }
-  
-    res.json(client);
+
+    console.log(client)
+    return res.status(200).json(client);
   });
   
   router.get('/:id',  ClientController.getClientById);

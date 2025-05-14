@@ -11,6 +11,16 @@ export const createClient = async (data) => {
 };
 
 
+export const findClient = async (chatId) => {
+  try {
+    const client = await db.Client.findOne({where: {chatId}});
+    if(!client) return false
+    return client
+  } catch(e) {
+    throw e;
+  }
+}
+
 export const getClientById = async (id) => {
   const client = await db.Client.findByPk(id, {
     attributes: { exclude: ['password'] },
@@ -37,15 +47,15 @@ export const updateClient = async (id, data) => {
     const existingClient = await db.Client.findByPk(id);
     if (!existingClient) throw new Error('Cliente não encontrado');
 
-    const isPasswordCorrect = await bcrypt.compare(
-      data.password,
-      existingClient.password
-    );
-    if (!isPasswordCorrect) {
-      throw new Error('Senha incorreta');
-    }
+    // const isPasswordCorrect = await bcrypt.compare(
+    //   data.password,
+    //   existingClient.password
+    // );
+    // if (!isPasswordCorrect) {
+    //   throw new Error('Senha incorreta');
+    // }
     const updateData = { ...data };
-    delete updateData.password;
+    // delete updateData.password;
     const [affected] = await db.Client.update(updateData, { where: { id } });
     if (affected === 0) throw new Error('Nada foi atualizado');
     return await getClientById(id);

@@ -28,6 +28,8 @@ bot.onText(/\/start/, async (msg) => {
   try {
     const response = await fetch(`http://localhost:3001/client?chatId=${chatId}`);
     const client = await response.json(); // <- aqui estava faltando o await
+    console.log(client)
+    
     //ERRO AQUI
     if (client && client.id) {
       return exibirMenuInicial(chatId, nome); // cliente já vinculado
@@ -47,9 +49,7 @@ bot.on('message', async (msg) => {
 
   // Só trata CPF se ele estiver na fase de cadastro
   if (pendingCpf[chatId]) {
-    console.log(text)
     const cpf = text.replace(/\D/g, ''); // remove não-numéricos
-    console.log(cpf)
 
     if (cpf.length !== 12) {
       return bot.sendMessage(chatId, 'CPF inválido. Envie apenas os 11 números.');
