@@ -1,13 +1,12 @@
-// config/database.js
+import 'dotenv/config';
+
 export default {
-    development: {
-      username: 'root',
-      password: 'guitarra21',
-      database: 'api-bot-2',
-      host: '127.0.0.1',
-      dialect: 'mysql',
-      logging: false
-    },
-    // Pode adicionar outros ambientes aqui: test, production...
-  };
-  
+  development: {
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    host: process.env.DB_HOST,
+    dialect: process.env.DB_DIALECT,
+    logging: process.env.DB_LOGGING === 'true',
+  },
+};

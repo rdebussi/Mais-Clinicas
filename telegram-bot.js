@@ -1,10 +1,10 @@
 import TelegramBot from 'node-telegram-bot-api';
 import fetch from 'node-fetch';
 import db from './models/index.js';
+import 'dotenv/config'; 
 
-const bot = new TelegramBot('7916606686:AAGOMGWar5aJgbE_LD9fIYfvPuew-d9ZhQU', { polling: true });
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 const CLINIC_ID = 1;
-const CLIENT_ID = 1; // futuramente você pode fazer o mapeamento chatId -> clientId
 
 const userSession = {}; // Armazena temporariamente as escolhas do usuário
 
@@ -21,21 +21,18 @@ function exibirMenuInicial(chatId, nome) {
 
 const pendingCpf = {};
 
-bot.onText(/\/start/, async (msg) => {
+bot.onText(/olá|oi|bom dia|boa tarde|boa noite/i, async (msg) => {
   const chatId = msg.chat.id;
   const nome = msg.from.first_name;
 
   try {
     const response = await fetch(`http://localhost:3001/client?chatId=${chatId}`);
-    const client = await response.json(); // <- aqui estava faltando o await
-    console.log(client)
-    
-    //ERRO AQUI
+    const client = await response.json();
     if (client && client.id) {
-      return exibirMenuInicial(chatId, nome); // cliente já vinculado
+      return exibirMenuInicial(chatId, nome); 
     } else {
       pendingCpf[chatId] = true;
-      return bot.sendMessage(chatId, 'Para continuar, informe seu CPF (apenas números)');
+      return bot.sendMessage(chatId, 'Olá, somos a Clínica Health Care 🏥\n\n- Para continuar, informe seu CPF (apenas números) 💬');
     }
   } catch (err) {
     console.error(err);
@@ -47,23 +44,17 @@ bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
   const text = msg.text;
 
-  // Só trata CPF se ele estiver na fase de cadastro
   if (pendingCpf[chatId]) {
-    const cpf = text.replace(/\D/g, ''); // remove não-numéricos
-
-    if (cpf.length !== 12) {
+    const cpf = text.replace(/\D/g, '');
+    if (cpf && cpf.length !== 12) {
       return bot.sendMessage(chatId, 'CPF inválido. Envie apenas os 11 números.');
     }
-
     try {
       const response = await fetch(`http://localhost:3001/client?cpf=${cpf}`);
       const client = await response.json();
-
       if (!client || !client.id) {
         return bot.sendMessage(chatId, 'CPF não encontrado no sistema.');
       }
-
-      // Atualiza o chatId no banco
       await fetch(`http://localhost:3001/client/${client.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -86,12 +77,10 @@ bot.on('callback_query', async (callbackQuery) => {
   const msg = callbackQuery.message;
   const chatId = msg.chat.id;
   const data = callbackQuery.data;
-
   // MENU PRINCIPAL
   if (data === 'menu_inicial') {
     return exibirMenuInicial(chatId);
   }
-
   // VER MÉDICOS
   else if (data === 'ver_medicos') {
     try {
@@ -121,7 +110,6 @@ bot.on('callback_query', async (callbackQuery) => {
       bot.sendMessage(chatId, 'Erro ao buscar médicos.');
     }
   }
-
   // ESCOLHEU MÉDICO
   else if (data.startsWith('medico_')) {
     const doctorId = parseInt(data.split('_')[1], 10);
@@ -129,13 +117,14 @@ bot.on('callback_query', async (callbackQuery) => {
       ...userSession[chatId],
       doctorId
     };
-    
     const date = new Date();
     date.setDate(date.getDate() + 1); // amanhã
     const isoDate = date.toISOString().split('T')[0];
 
     try {
       const response = await fetch(`http://localhost:3001/doctor/${doctorId}/available?date=${isoDate}`);
+      const doctorRes = await fetch(`http://localhost:3001/doctor/${doctorId}`);
+      const doctor = await doctorRes.json();            
       const result = await response.json();
 
       if (!result.availableSlots || result.availableSlots.length === 0) {
@@ -147,7 +136,7 @@ bot.on('callback_query', async (callbackQuery) => {
         callback_data: `confirmar_${doctorId}_${isoDate}_${slot}`
       }]);
 
-      bot.sendMessage(chatId, `Horários disponíveis para ${isoDate}:`, {
+      bot.sendMessage(chatId, `Horários disponíveis para ${isoDate} com o médico ${doctor.name}:`, {
         reply_markup: {
           inline_keyboard: [
             ...slotsKeyboard,
@@ -255,7 +244,7 @@ bot.on('callback_query', async (callbackQuery) => {
   bot.answerCallbackQuery(callbackQuery.id);
 });
 
-// /medicos comando alternativo (não mexido)
+///medicos comando alternativo (não mexido)
 bot.onText(/\/medicos/, async (msg) => {
   const chatId = msg.chat.id;
 
